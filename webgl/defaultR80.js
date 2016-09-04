@@ -1,6 +1,7 @@
+/* Global */
 var camera, scene, renderer;
+var keyState = {};
 var cubecubeMesh;
-
 
 function setRenderer() {
 
@@ -38,13 +39,13 @@ function setWorld() {
 	/* Inside this we put all the object of our scene */
 
 	var geometry = new THREE.BoxGeometry( 1, 1, 1 );
-	var material = new THREE.MeshNormalMaterial( { wireframe: false } );
+	var material = new THREE.MeshPhongMaterial( { color: 0x0000ff, wireframe: false, shininess:50 } );
 	cubeMesh = new THREE.Mesh( geometry, material );
 	scene.add( cubeMesh );				
 }
 
 
-function setCameraHelper() {
+function setCameraHelper() {wd
 	
 	var helperCamera = new THREE.CameraHelper( camera );
 	scene.add( helperCamera );
@@ -71,28 +72,55 @@ function animate() {
 
 
 function setEventListenerHandler(){
+	
+	window.addEventListener('keydown',function(e){
+	    keyState[e.keyCode || e.which] = true;
+	},true); 
 
-	document.onkeydown = function( ev ){ keydown( ev ); };
+	window.addEventListener('keyup',function(e){
+	    keyState[e.keyCode || e.which] = false;
+	},true);
+	
 	window.addEventListener( 'resize', onWindowResize, false );
 }
 
 
-function keydown( ev ){
-	/* With this we can handle keyboard events 
-	raised inside setEventListenerHandler() function */
-	
-	switch( ev.keyCode ){
-	
-		case 81: // Q
-			cubeMesh.position.y += 0.1;
-         	break;
-        
-        case 87: // W
-           	cubeMesh.position.y -= 0.1;
-			break;
+function setKeyboardControls() {
+    
+    if( keyState[87] ){ // W
+    	cubeMesh.position.y += 0.1;
     }
-}
 
+    if( keyState[83] ){ // S
+        cubeMesh.position.y -= 0.1;
+    }
+
+    if( keyState[65] ){ // A
+    	cubeMesh.position.x -= 0.1;
+    }
+
+    if( keyState[68] ){ // D
+    	cubeMesh.position.x += 0.1;
+    }
+
+    setTimeout( setKeyboardControls, 10 );
+}    
+
+function setLights(){
+
+	var light = new THREE.AmbientLight( 0xffffff );
+	scene.add( light );
+
+	var spotLight = new THREE.SpotLight( 0xffffff );
+	spotLight.position.set( 0.5, 0.5, 0.5 );
+
+	spotLight.castShadow = true;
+
+	spotLight.shadow.mapSize.width = window.innerWidth;
+	spotLight.shadow.mapSize.height = window.innerHeight;
+
+	scene.add( spotLight );
+}
 
 function onWindowResize() {
 
@@ -107,10 +135,12 @@ function main() {
 	setRenderer();
 	setCamera();
 	setControls();
+	setEventListenerHandler();
+	setKeyboardControls();
 	setScene();
+	setLights();
 	//setCameraHelper()
 	setDrawHelpers( 5 )
 	setWorld();
-	setEventListenerHandler();
 	animate();
 }
